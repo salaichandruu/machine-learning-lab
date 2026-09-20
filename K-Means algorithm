@@ -1,0 +1,41 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.metrics import silhouette_score
+
+df = pd.read_csv("Wholesale customers data.csv")
+
+print("Dataset shape:", df.shape)
+print(df.head())
+
+X = df.drop(["Channel", "Region"], axis=1)
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+df["Cluster"] = kmeans.fit_predict(X_scaled)
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+plt.figure(figsize=(8, 6))
+sns.scatterplot(
+    x=X_pca[:, 0],
+    y=X_pca[:, 1],
+    hue=df["Cluster"],
+    palette="viridis"
+)
+
+plt.title("K-Means Clustering Visualization (PCA)")
+plt.xlabel("PCA Component 1")
+plt.ylabel("PCA Component 2")
+plt.legend(title="Cluster")
+plt.show()
+
+score = silhouette_score(X_scaled, df["Cluster"])
+print("Silhouette Score:", round(score, 2))
